@@ -1,0 +1,22 @@
+{
+  "name": "devfocus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DevFocus — organizacao pessoal de atividades com gamificacao (streak diaria)",
+  "workspaces": [
+    "services/*",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "concurrently -n gateway,cards,streak,notify,frontend -c blue,green,yellow,magenta,cyan \"npm:dev:gateway\" \"npm:dev:cards\" \"npm:dev:streak\" \"npm:dev:notifications\" \"npm:dev:frontend\"",
+    "dev:cards": "npm run dev -w cards-service",
+    "dev:streak": "npm run dev -w streak-service",
+    "dev:notifications": "npm run dev -w notification-service",
+    "dev:gateway": "npm run dev -w api-gateway",
+    "dev:frontend": "npm run dev -w devfocus-frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
