@@ -1,0 +1,45 @@
+Módulo: Áreas
+1. O sistema deve permitir criar novas áreas além das padrão (Trabalho, Faculdade, Dia a dia)
+2. O sistema deve permitir renomear áreas existentes
+3. O sistema deve exibir a quantidade de cards pendentes por área no painel principal
+
+Módulo: Prioridades
+4. O sistema deve permitir cadastrar prioridades personalizadas com nome e cor
+5. O sistema deve aplicar a cor da prioridade visualmente no card correspondente
+
+Módulo: Cards
+6. O sistema deve permitir criar cards com descrição, área, prioridade, prazo e marcação de "essencial"
+7. O sistema deve permitir editar e excluir cards existentes
+8. O sistema deve permitir marcar um card como concluído
+9. O sistema deve exibir alerta quando um card estiver a 7 dias ou menos do prazo
+10. O sistema deve permitir filtrar cards por área, prioridade e status
+
+Módulo: Ofensiva (Streak)
+11. O sistema deve verificar diariamente se todos os cards essenciais do dia foram concluídos
+12. O sistema deve incrementar a sequência da ofensiva quando todos os essenciais forem concluídos
+13. O sistema deve resetar a sequência da ofensiva para zero se um card essencial não for concluído
+14. O sistema deve executar o reset/verificação automaticamente à meia-noite
+15. O sistema deve armazenar e exibir o recorde da maior sequência já alcançada
+16. O sistema deve exibir um histórico/calendário indicando os dias em que a meta foi batida
+
+Módulo: Painel Principal
+17. O sistema deve exibir um resumo do dia com cards pendentes e concluídos
+18. O sistema deve exibir a ofensiva atual em destaque
+19. O sistema deve exibir uma frase motivacional diária
+
+Módulo: Notificações (E-mail)
+20. O sistema deve enviar um e-mail diário automático lembrando de planejar as atividades do dia seguinte
+21. O sistema deve enviar um e-mail automático de alerta quando um card estiver a 7 dias ou menos do prazo
+
+API entre Microsserviços
+22. O cards-service deve expor endpoints REST para CRUD de áreas, prioridades e cards
+23. O streak-service deve expor endpoint GET /streak para consultar sequência atual e recorde
+24. O streak-service deve expor endpoint interno para recalcular a ofensiva com base nos cards essenciais do dia
+25. O notification-service deve expor endpoint interno para disparo de e-mails, consumido por job agendado
+26. O api-gateway deve centralizar e rotear todas as requisições do frontend Vue.js para os serviços corretos
+Módulo: Autenticação
+27. O sistema deve exibir uma tela de login com e-mail e senha
+28. O sistema deve permitir cadastro de conta (e-mail e senha) via Supabase Auth
+29. O sistema deve redirecionar para o Painel Principal após login bem-sucedido
+30. O sistema deve permitir logout
+31. O sistema deve impedir acesso às demais telas sem autenticação

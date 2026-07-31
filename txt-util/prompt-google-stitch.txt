@@ -1,0 +1,64 @@
+Contexto:
+Sistema pessoal de organização de atividades, estilo "Jira pessoal" com 
+gamificação. O usuário final é uma pessoa técnica (desenvolvedor), que quer 
+uma interface limpa, rápida de escanear visualmente, e que funcione bem tanto 
+para uso diário rápido quanto para configurações ocasionais. Uso individual, 
+sem múltiplos perfis.
+
+Telas a prototipar:
+
+0. Tela de Login
+   - Campos: e-mail, senha
+   - Ações: entrar, criar conta (link/toggle para tela de cadastro), 
+     "esqueci minha senha"
+   - Visual minimalista, logo/nome do sistema centralizado, mesmo design 
+     system das demais telas (fundo escuro #0F0F17, cor primária #6366F1)
+
+1. Painel Principal
+   - Ofensiva (streak) em destaque no topo, com número de dias e ícone de fogo
+   - Frase motivacional do dia
+   - Resumo do dia: quantidade de cards pendentes e concluídos
+   - Contagem de cards pendentes por área (cards pequenos ou badges, sem listar os cards)
+   - Ações: botão de acesso rápido para criar novo card
+
+2. Tela de Área
+   - Lista de cards da área selecionada
+   - Filtros por prioridade e status (pendente/concluído)
+   - Cor lateral ou badge no card conforme prioridade
+   - Indicador visual nos cards marcados como "essencial"
+   - Ações: criar card, editar card, marcar como concluído
+
+3. Tela "Meus Cards"
+   - Lista de todos os cards de todas as áreas
+   - Filtros combinados: área, prioridade, status
+   - Mesma lógica visual de cores da tela de Área
+
+4. Tela de Histórico da Ofensiva
+   - Sequência atual e maior recorde em destaque
+   - Calendário mensal com indicação visual dos dias em que a meta foi batida
+   - Ações: navegar entre meses
+
+5. Tela de Configurações
+   - Lista de áreas com opção de renomear e criar nova
+   - Lista de prioridades com opção de criar/editar (nome + cor)
+
+6. Tela de Criar/Editar Card
+   - Formulário com: descrição, seleção de área, seleção de prioridade, 
+     data de prazo, toggle "essencial"
+   - Ações: salvar, cancelar, excluir (no modo edição)
+
+Design System:
+- Cor primária: #6366F1 (indigo vibrante, transmite foco e produtividade)
+- Cor de fundo: #0F0F17 (escuro, reduz fadiga visual em uso diário)
+- Cor de superfície (cards): #1A1A26
+- Cor de texto principal: #F4F4F5
+- Cor de destaque/ação (streak/sucesso): #F59E0B (laranja, remete a "fogo" da ofensiva)
+- Tipografia: Inter como fonte principal — H1 32px/bold, H2 20px/semibold, 
+  corpo 14px/regular, label 12px/medium
+- Tom visual: minimalista, cards com bordas arredondadas (12px), sombra suave, 
+  espaçamento generoso, compatível com shadcn/ui
+
+Instrução final para o Stitch:
+Gere todas as telas de forma navegável e coerente entre si, respeitando o 
+design system definido. Os componentes devem ser consistentes entre telas. 
+Use o design system como base para todos os elementos visuais.

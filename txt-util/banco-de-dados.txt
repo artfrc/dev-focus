@@ -1,0 +1,47 @@
+tabela: areas
+  - id: uuid, PK, default gen_random_uuid()
+  - nome: text, obrigatório
+  - cor: text, opcional (cor de identificação da área)
+  - criado_em: timestamptz, default now()
+
+tabela: prioridades
+  - id: uuid, PK, default gen_random_uuid()
+  - nome: text, obrigatório
+  - cor: text, obrigatório (define a cor do card)
+  - ordem: integer, obrigatório (nível de urgência, ex: 1 = mais alta)
+
+tabela: cards
+  - id: uuid, PK, default gen_random_uuid()
+  - area_id: uuid, FK → areas.id
+  - prioridade_id: uuid, FK → prioridades.id
+  - descricao: text, obrigatório
+  - essencial: boolean, default false
+  - prazo: date, obrigatório
+  - status: text, default 'pendente' (pendente | concluido)
+  - criado_em: timestamptz, default now()
+  - concluido_em: timestamptz, opcional
+
+tabela: streak
+  - id: uuid, PK, default gen_random_uuid()
+  - sequencia_atual: integer, default 0
+  - maior_sequencia: integer, default 0
+  - ultima_atualizacao: date, obrigatório
+
+tabela: streak_historico
+  - id: uuid, PK, default gen_random_uuid()
+  - data: date, obrigatório
+  - meta_batida: boolean, obrigatório (true = todos essenciais concluídos)
+  - criado_em: timestamptz, default now()
+
+tabela: frases_motivacionais
+  - id: uuid, PK, default gen_random_uuid()
+  - texto: text, obrigatório
+  - ativa: boolean, default true
+
+Observações:
+- RLS (Row Level Security) deve ser habilitado em todas as tabelas, 
+  restringindo acesso apenas ao usuário autenticado (auth.uid()).
+- Como é uso individual, não há necessidade de coluna user_id separada 
+  por registro, mas recomenda-se adicionar user_id em todas as tabelas 
+  vinculado a auth.users(id), garantindo isolamento caso o sistema 
+  evolua para multiusuário no futuro.

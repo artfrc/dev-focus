@@ -1,0 +1,249 @@
+Você é um desenvolvedor senior especializado em arquitetura de microsserviços.
+Implemente o sistema de organização pessoal de atividades (estilo "Jira pessoal 
+com gamificação") do zero. Não me explique — apenas implemente.
+
+## Stack
+- Frontend: Vue.js 3 (Composition API) + Vite + Tailwind CSS
+- Backend: Node.js (Express) dividido em microsserviços
+- Banco/Auth: Supabase (PostgreSQL + Auth email/senha + RLS)
+- Comunicação entre serviços: REST internoVocê é um desenvolvedor senior especializado em arquitetura de microsserviços.
+Implemente o sistema de organização pessoal de atividades (estilo "Jira pessoal 
+com gamificação") do zero. Não me explique — apenas implemente.
+
+## Stack
+- Frontend: Vue.js 3 (Composition API) + Vite + Tailwind CSS
+- Backend: Node.js (Express) dividido em microsserviços
+- Banco/Auth: Supabase (PostgreSQL + Auth email/senha + RLS)
+- Comunicação entre serviços: REST interno
+
+## Arquitetura de Microsserviços
+- /services/cards-service   → CRUD de áreas, prioridades e cards
+- /services/streak-service  → lógica de ofensiva, reset diário, histórico
+- /services/notification-service → envio de e-mails (lembrete diário + alerta de prazo)
+- /services/api-gateway     → ponto único de entrada consumido pelo frontend
+- /frontend                 → aplicação Vue.js
+
+Cada serviço deve ter seu próprio package.json, rodar em porta independente,
+e se conectar ao mesmo projeto Supabase via variáveis de ambiente (.env).
+
+## Sistema
+Sistema pessoal de organização de tarefas dividido em áreas (Trabalho, 
+Faculdade, Dia a dia, com possibilidade de criar/renomear áreas). O usuário 
+cria cards com descrição, prioridade (cor visual), prazo e marcação de 
+"essencial". Cards essenciais determinam uma ofensiva (streak) diária, 
+similar ao Duolingo: se todos os essenciais do dia forem concluídos, a 
+sequência aumenta; se um só ficar pendente, a ofensiva reseta. O sistema 
+envia lembretes por e-mail (diário + alerta de prazo a 7 dias ou menos) 
+e exibe frases motivacionais no painel principal.
+
+## Banco de Dados (Supabase)
+[
+  tabela: areas
+  - id: uuid, PK, default gen_random_uuid()
+  - nome: text, obrigatório
+  - cor: text, opcional (cor de identificação da área)
+  - criado_em: timestamptz, default now()
+
+tabela: prioridades
+  - id: uuid, PK, default gen_random_uuid()
+  - nome: text, obrigatório
+  - cor: text, obrigatório (define a cor do card)
+  - ordem: integer, obrigatório (nível de urgência, ex: 1 = mais alta)
+
+tabela: cards
+  - id: uuid, PK, default gen_random_uuid()
+  - area_id: uuid, FK → areas.id
+  - prioridade_id: uuid, FK → prioridades.id
+  - descricao: text, obrigatório
+  - essencial: boolean, default false
+  - prazo: date, obrigatório
+  - status: text, default 'pendente' (pendente | concluido)
+  - criado_em: timestamptz, default now()
+  - concluido_em: timestamptz, opcional
+
+tabela: streak
+  - id: uuid, PK, default gen_random_uuid()
+  - sequencia_atual: integer, default 0
+  - maior_sequencia: integer, default 0
+  - ultima_atualizacao: date, obrigatório
+
+tabela: streak_historico
+  - id: uuid, PK, default gen_random_uuid()
+  - data: date, obrigatório
+  - meta_batida: boolean, obrigatório (true = todos essenciais concluídos)
+  - criado_em: timestamptz, default now()
+
+tabela: frases_motivacionais
+  - id: uuid, PK, default gen_random_uuid()
+  - texto: text, obrigatório
+  - ativa: boolean, default true
+
+Observações:
+- RLS (Row Level Security) deve ser habilitado em todas as tabelas, 
+  restringindo acesso apenas ao usuário autenticado (auth.uid()).
+- Como é uso individual, não há necessidade de coluna user_id separada 
+  por registro, mas recomenda-se adicionar user_id em todas as tabelas 
+  vinculado a auth.users(id), garantindo isolamento caso o sistema 
+  evolua para multiusuário no futuro.
+]
+
+## Requisitos Funcionais
+[
+  Módulo: Áreas
+1. O sistema deve permitir criar novas áreas além das padrão (Trabalho, Faculdade, Dia a dia)
+2. O sistema deve permitir renomear áreas existentes
+3. O sistema deve exibir a quantidade de cards pendentes por área no painel principal
+
+Módulo: Prioridades
+4. O sistema deve permitir cadastrar prioridades personalizadas com nome e cor
+5. O sistema deve aplicar a cor da prioridade visualmente no card correspondente
+
+Módulo: Cards
+6. O sistema deve permitir criar cards com descrição, área, prioridade, prazo e marcação de "essencial"
+7. O sistema deve permitir editar e excluir cards existentes
+8. O sistema deve permitir marcar um card como concluído
+9. O sistema deve exibir alerta quando um card estiver a 7 dias ou menos do prazo
+10. O sistema deve permitir filtrar cards por área, prioridade e status
+
+Módulo: Ofensiva (Streak)
+11. O sistema deve verificar diariamente se todos os cards essenciais do dia foram concluídos
+12. O sistema deve incrementar a sequência da ofensiva quando todos os essenciais forem concluídos
+13. O sistema deve resetar a sequência da ofensiva para zero se um card essencial não for concluído
+14. O sistema deve executar o reset/verificação automaticamente à meia-noite
+15. O sistema deve armazenar e exibir o recorde da maior sequência já alcançada
+16. O sistema deve exibir um histórico/calendário indicando os dias em que a meta foi batida
+
+Módulo: Painel Principal
+17. O sistema deve exibir um resumo do dia com cards pendentes e concluídos
+18. O sistema deve exibir a ofensiva atual em destaque
+19. O sistema deve exibir uma frase motivacional diária
+
+Módulo: Notificações (E-mail)
+20. O sistema deve enviar um e-mail diário automático lembrando de planejar as atividades do dia seguinte
+21. O sistema deve enviar um e-mail automático de alerta quando um card estiver a 7 dias ou menos do prazo
+
+API entre Microsserviços
+22. O cards-service deve expor endpoints REST para CRUD de áreas, prioridades e cards
+23. O streak-service deve expor endpoint GET /streak para consultar sequência atual e recorde
+24. O streak-service deve expor endpoint interno para recalcular a ofensiva com base nos cards essenciais do dia
+25. O notification-service deve expor endpoint interno para disparo de e-mails, consumido por job agendado
+26. O api-gateway deve centralizar e rotear todas as requisições do frontend Vue.js para os serviços corretos
+]
+
+## Configuração Supabase
+- Auth: email + senha
+- RLS: usuário autenticado acessa apenas seus próprios dados (user_id = auth.uid())
+- Job agendado (cron) no notification-service para disparo diário de e-mails 
+  e verificação de prazos
+- Job agendado (cron) no streak-service para reset/verificação da ofensiva 
+  à meia-noite
+
+## Estrutura de pastas sugerida
+/services
+  /cards-service/src
+  /streak-service/src
+  /notification-service/src
+  /api-gateway/src
+/frontend
+  /src/components + /src/views + /src/lib/supabase.ts + /src/router
+
+Comece pelo setup: criar a estrutura de monorepo com os microsserviços, 
+configurar o cliente Supabase em cada serviço que precisar, e montar o 
+scaffold do frontend Vue.js. Implemente componentes visuais fiéis ao 
+protótipo gerado no Google Stitch.
+
+## Arquitetura de Microsserviços
+- /services/cards-service   → CRUD de áreas, prioridades e cards
+- /services/streak-service  → lógica de ofensiva, reset diário, histórico
+- /services/notification-service → envio de e-mails (lembrete diário + alerta de prazo)
+- /services/api-gateway     → ponto único de entrada consumido pelo frontend
+- /frontend                 → aplicação Vue.js
+
+Cada serviço deve ter seu próprio package.json, rodar em porta independente,
+e se conectar ao mesmo projeto Supabase via variáveis de ambiente (.env).
+
+## Sistema
+Sistema pessoal de organização de tarefas dividido em áreas (Trabalho, 
+Faculdade, Dia a dia, com possibilidade de criar/renomear áreas). O usuário 
+cria cards com descrição, prioridade (cor visual), prazo e marcação de 
+"essencial". Cards essenciais determinam uma ofensiva (streak) diária, 
+similar ao Duolingo: se todos os essenciais do dia forem concluídos, a 
+sequência aumenta; se um só ficar pendente, a ofensiva reseta. O sistema 
+envia lembretes por e-mail (diário + alerta de prazo a 7 dias ou menos) 
+e exibe frases motivacionais no painel principal.
+
+## Banco de Dados (Supabase)
+tabela: areas
+  - id: uuid, PK, default gen_random_uuid()
+  - nome: text, obrigatório
+  - cor: text, opcional (cor de identificação da área)
+  - criado_em: timestamptz, default now()
+
+tabela: prioridades
+  - id: uuid, PK, default gen_random_uuid()
+  - nome: text, obrigatório
+  - cor: text, obrigatório (define a cor do card)
+  - ordem: integer, obrigatório (nível de urgência, ex: 1 = mais alta)
+
+tabela: cards
+  - id: uuid, PK, default gen_random_uuid()
+  - area_id: uuid, FK → areas.id
+  - prioridade_id: uuid, FK → prioridades.id
+  - descricao: text, obrigatório
+  - essencial: boolean, default false
+  - prazo: date, obrigatório
+  - status: text, default 'pendente' (pendente | concluido)
+  - criado_em: timestamptz, default now()
+  - concluido_em: timestamptz, opcional
+
+tabela: streak
+  - id: uuid, PK, default gen_random_uuid()
+  - sequencia_atual: integer, default 0
+  - maior_sequencia: integer, default 0
+  - ultima_atualizacao: date, obrigatório
+
+tabela: streak_historico
+  - id: uuid, PK, default gen_random_uuid()
+  - data: date, obrigatório
+  - meta_batida: boolean, obrigatório (true = todos essenciais concluídos)
+  - criado_em: timestamptz, default now()
+
+tabela: frases_motivacionais
+  - id: uuid, PK, default gen_random_uuid()
+  - texto: text, obrigatório
+  - ativa: boolean, default true
+
+Observações:
+- RLS (Row Level Security) deve ser habilitado em todas as tabelas, 
+  restringindo acesso apenas ao usuário autenticado (auth.uid()).
+- Como é uso individual, não há necessidade de coluna user_id separada 
+  por registro, mas recomenda-se adicionar user_id em todas as tabelas 
+  vinculado a auth.users(id), garantindo isolamento caso o sistema 
+  evolua para multiusuário no futuro.
+
+## Requisitos Funcionais
+[colar aqui a lista completa do Item 2]
+
+## Configuração Supabase
+- Auth: email + senha
+- RLS: usuário autenticado acessa apenas seus próprios dados (user_id = auth.uid())
+- Job agendado (cron) no notification-service para disparo diário de e-mails 
+  e verificação de prazos
+- Job agendado (cron) no streak-service para reset/verificação da ofensiva 
+  à meia-noite
+- Auth: email + senha, com tela de login e cadastro no frontend
+- Rotas protegidas no Vue Router (redirecionar para /login se não autenticado)
+
+## Estrutura de pastas sugerida
+/services
+  /cards-service/src
+  /streak-service/src
+  /notification-service/src
+  /api-gateway/src
+/frontend
+  /src/components + /src/views + /src/lib/supabase.ts + /src/router
+
+Comece pelo setup: criar a estrutura de monorepo com os microsserviços, 
+configurar o cliente Supabase em cada serviço que precisar, e montar o 
+scaffold do frontend Vue.js. Implemente componentes visuais fiéis ao 
+protótipo gerado no Google Stitch.
