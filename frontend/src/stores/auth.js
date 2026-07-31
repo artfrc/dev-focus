@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia';
 import { supabase } from '../lib/supabase.js';
+import { IDIOMAS_SUPORTADOS, definirIdiomaGlobal } from '../i18n/index.js';
+
+/** Aplica o idioma salvo no perfil do usuario (user_metadata), se houver. */
+function aplicarIdiomaDoUsuario(user) {
+  const idioma = user?.user_metadata?.idioma;
+  if (IDIOMAS_SUPORTADOS.includes(idioma)) definirIdiomaGlobal(idioma);
+}
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -18,10 +25,12 @@ export const useAuthStore = defineStore('auth', {
       this.session = data.session;
       this.user = data.session?.user ?? null;
       this.ready = true;
+      aplicarIdiomaDoUsuario(this.user);
 
       supabase.auth.onAuthStateChange((_event, session) => {
         this.session = session;
         this.user = session?.user ?? null;
+        aplicarIdiomaDoUsuario(this.user);
       });
     },
 
@@ -30,6 +39,7 @@ export const useAuthStore = defineStore('auth', {
       if (error) throw error;
       this.session = data.session;
       this.user = data.user;
+      aplicarIdiomaDoUsuario(this.user);
     },
 
     async signUp(email, password) {
@@ -37,12 +47,23 @@ export const useAuthStore = defineStore('auth', {
       if (error) throw error;
       this.session = data.session;
       this.user = data.user;
+      aplicarIdiomaDoUsuario(this.user);
     },
 
     async signOut() {
       await supabase.auth.signOut();
       this.session = null;
       this.user = null;
+    },
+
+    /** Troca o idioma na interface e, se autenticado, persiste no perfil (user_metadata) para os proximos logins. */
+    async definirIdioma(idioma) {
+      definirIdiomaGlobal(idioma);
+      if (!this.isAuthenticated) return;
+
+      const { data, error } = await supabase.auth.updateUser({ data: { idioma } });
+      if (error) throw error;
+      this.user = data.user;
     },
   },
 });

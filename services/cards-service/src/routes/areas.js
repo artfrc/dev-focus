@@ -14,7 +14,7 @@ areasRouter.get('/', async (req, res) => {
 
 areasRouter.post('/', async (req, res) => {
   const { nome, cor } = req.body;
-  if (!nome) return res.status(400).json({ error: 'nome e obrigatorio.' });
+  if (!nome) return res.status(400).json({ error: 'nome é obrigatório.' });
 
   const { data, error } = await req.supabase
     .from('areas')
@@ -40,7 +40,7 @@ areasRouter.patch('/:id', async (req, res) => {
     .maybeSingle();
 
   if (error) return res.status(400).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Area nao encontrada.' });
+  if (!data) return res.status(404).json({ error: 'Área não encontrada.' });
   res.json(data);
 });
 

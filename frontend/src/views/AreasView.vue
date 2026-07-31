@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/layout/PageHeader.vue';
 import Icon from '../components/Icon.vue';
@@ -7,6 +8,7 @@ import { useCardsStore } from '../stores/cards.js';
 
 const cardsStore = useCardsStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const novaAreaNome = ref('');
 const criando = ref(false);
@@ -34,12 +36,12 @@ async function criarArea() {
 
 <template>
   <div>
-    <PageHeader title="Areas" :show-add-button="false" />
+    <PageHeader :title="t('areas.title')" :show-add-button="false" />
 
     <div class="p-8 space-y-6">
       <form class="flex items-center gap-2 max-w-md" @submit.prevent="criarArea">
-        <input v-model="novaAreaNome" type="text" placeholder="Nome da nova area..." class="input-field" />
-        <button type="submit" class="btn-primary shrink-0" :disabled="criando">Criar</button>
+        <input v-model="novaAreaNome" type="text" :placeholder="t('areas.newAreaPlaceholder')" class="input-field" />
+        <button type="submit" class="btn-primary shrink-0" :disabled="criando">{{ t('common.create') }}</button>
       </form>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -56,11 +58,11 @@ async function criarArea() {
             >
               {{ area.nome.slice(0, 1).toUpperCase() }}
             </span>
-            <span class="badge bg-surface2 text-ink">{{ pendentesDe(area.id) }} pendentes</span>
+            <span class="badge bg-surface2 text-ink">{{ pendentesDe(area.id) }} {{ t('areas.pending') }}</span>
           </div>
           <p class="text-base font-semibold text-ink mt-3">{{ area.nome }}</p>
           <p class="text-xs text-muted mt-1 flex items-center gap-1">
-            Ver cards <Icon name="chevron-right" :size="14" />
+            {{ t('areas.viewCards') }} <Icon name="chevron-right" :size="14" />
           </p>
         </button>
       </div>

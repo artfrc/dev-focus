@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/layout/PageHeader.vue';
 import Icon from '../components/Icon.vue';
@@ -13,6 +14,11 @@ const streakStore = useStreakStore();
 const frasesStore = useFrasesStore();
 const ui = useUiStore();
 const router = useRouter();
+const { t, locale } = useI18n();
+
+watch(locale, () => {
+  frasesStore.carregarFraseDoDia().catch(() => {});
+});
 
 onMounted(() => {
   cardsStore.carregarResumo().catch(() => {});
@@ -35,7 +41,7 @@ function corDeArea(cor) {
 
 <template>
   <div>
-    <PageHeader title="Painel Principal" />
+    <PageHeader :title="t('dashboard.title')" />
 
     <div class="p-8 space-y-6">
       <!-- Streak banner -->
@@ -45,8 +51,10 @@ function corDeArea(cor) {
             <Icon name="flame" :size="28" />
           </div>
           <div>
-            <p class="text-xs font-semibold text-muted tracking-wide">SEQUENCIA ATUAL</p>
-            <p class="text-2xl font-bold text-ink">Ofensiva: {{ streakStore.streak?.sequencia_atual ?? 0 }} dias</p>
+            <p class="text-xs font-semibold text-muted tracking-wide">{{ t('dashboard.streakLabel') }}</p>
+            <p class="text-2xl font-bold text-ink">
+              {{ t('dashboard.streakValue', { n: streakStore.streak?.sequencia_atual ?? 0 }) }}
+            </p>
           </div>
         </div>
 
@@ -59,24 +67,24 @@ function corDeArea(cor) {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="card-surface p-5 border-l-2 border-l-primary">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold text-muted tracking-wide">PENDENTES</p>
+            <p class="text-xs font-semibold text-muted tracking-wide">{{ t('dashboard.pending') }}</p>
             <Icon name="list" :size="18" class="text-muted" />
           </div>
           <p class="text-3xl font-bold text-ink mt-2">{{ String(resumo?.total_pendentes ?? 0).padStart(2, '0') }}</p>
-          <p class="text-xs text-muted mt-1">Cards aguardando conclusao</p>
+          <p class="text-xs text-muted mt-1">{{ t('dashboard.pendingHint') }}</p>
         </div>
 
         <div class="card-surface p-5 border-l-2 border-l-accent">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold text-muted tracking-wide">CONCLUIDOS</p>
+            <p class="text-xs font-semibold text-muted tracking-wide">{{ t('dashboard.completed') }}</p>
             <Icon name="check" :size="18" class="text-muted" />
           </div>
           <p class="text-3xl font-bold text-ink mt-2">{{ String(resumo?.total_concluidos ?? 0).padStart(2, '0') }}</p>
-          <p class="text-xs text-accent mt-1">{{ percentualConcluido }}% do total concluido</p>
+          <p class="text-xs text-accent mt-1">{{ t('dashboard.completedHint', { percent: percentualConcluido }) }}</p>
         </div>
 
         <div class="card-surface p-5">
-          <p class="text-xs font-semibold text-muted tracking-wide mb-3">PROGRESSO GERAL</p>
+          <p class="text-xs font-semibold text-muted tracking-wide mb-3">{{ t('dashboard.overallProgress') }}</p>
           <div class="flex items-end gap-1.5 h-14">
             <div
               v-for="(altura, idx) in barrasProgresso"
@@ -93,9 +101,9 @@ function corDeArea(cor) {
       <div>
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-base font-semibold text-ink flex items-center gap-2">
-            <Icon name="grid" :size="18" /> Cards por Area
+            <Icon name="grid" :size="18" /> {{ t('dashboard.cardsByArea') }}
           </h2>
-          <router-link to="/areas" class="text-xs text-primary hover:underline">Ver tudo</router-link>
+          <router-link to="/areas" class="text-xs text-primary hover:underline">{{ t('dashboard.viewAll') }}</router-link>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -125,7 +133,7 @@ function corDeArea(cor) {
             @click="router.push('/configuracoes')"
           >
             <Icon name="plus" :size="18" />
-            <span class="text-xs mt-1">Nova Area</span>
+            <span class="text-xs mt-1">{{ t('dashboard.newArea') }}</span>
           </button>
         </div>
       </div>
@@ -133,11 +141,9 @@ function corDeArea(cor) {
       <!-- Bottom cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card-surface p-6 bg-gradient-to-br from-primary/20 via-surface to-surface">
-          <span class="badge bg-bg/60 text-accent mb-3">Dica de Foco</span>
-          <p class="text-lg font-semibold text-ink">Tecnica Pomodoro: 25 min Foco / 5 min Pausa</p>
-          <p class="text-sm text-muted mt-2">
-            Divida o trabalho em blocos curtos e focados para manter a consistencia ao longo do dia.
-          </p>
+          <span class="badge bg-bg/60 text-accent mb-3">{{ t('dashboard.focusTip') }}</span>
+          <p class="text-lg font-semibold text-ink">{{ t('dashboard.pomodoroTitle') }}</p>
+          <p class="text-sm text-muted mt-2">{{ t('dashboard.pomodoroDesc') }}</p>
         </div>
 
         <div class="card-surface p-6">
@@ -145,18 +151,18 @@ function corDeArea(cor) {
             <div class="w-10 h-10 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
               <Icon name="trophy" :size="20" />
             </div>
-            <h3 class="text-base font-semibold text-ink">Proxima Conquista</h3>
+            <h3 class="text-base font-semibold text-ink">{{ t('dashboard.nextAchievement') }}</h3>
           </div>
-          <p class="text-sm text-muted mb-3">
-            Complete 15 dias seguidos para ganhar o selo "Mestre da Consistencia".
-          </p>
+          <p class="text-sm text-muted mb-3">{{ t('dashboard.achievementDesc') }}</p>
           <div class="h-2 bg-border rounded-full overflow-hidden">
             <div
               class="h-full bg-accent"
               :style="{ width: Math.min(((streakStore.streak?.sequencia_atual ?? 0) / 15) * 100, 100) + '%' }"
             />
           </div>
-          <p class="text-xs text-muted mt-2 text-right">{{ streakStore.streak?.sequencia_atual ?? 0 }}/15 dias</p>
+          <p class="text-xs text-muted mt-2 text-right">
+            {{ t('dashboard.achievementProgress', { n: streakStore.streak?.sequencia_atual ?? 0 }) }}
+          </p>
         </div>
       </div>
     </div>

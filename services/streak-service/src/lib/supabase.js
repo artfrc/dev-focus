@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error('SUPABASE_URL e SUPABASE_ANON_KEY sao obrigatorios (ver .env.example)');
+  throw new Error('SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórios (ver .env.example)');
 }
 
 /** Client escopado ao usuario da requisicao — respeita RLS. */

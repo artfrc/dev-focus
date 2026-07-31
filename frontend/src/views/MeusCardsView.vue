@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import PageHeader from '../components/layout/PageHeader.vue';
 import PriorityDot from '../components/PriorityDot.vue';
 import StatusBadge from '../components/StatusBadge.vue';
@@ -12,6 +13,7 @@ import { useUiStore } from '../stores/ui.js';
 const cardsStore = useCardsStore();
 const streakStore = useStreakStore();
 const ui = useUiStore();
+const { t } = useI18n();
 
 const filtros = reactive({ area_id: '', prioridade_id: '', status: '' });
 const menuAbertoId = reactive({ id: null });
@@ -58,7 +60,7 @@ function editar(card) {
 
 async function excluir(card) {
   menuAbertoId.id = null;
-  if (!confirm(`Excluir o card "${card.descricao}"?`)) return;
+  if (!confirm(t('cards.confirmDelete', { name: card.descricao }))) return;
   await cardsStore.excluirCard(card.id);
   streakStore.carregarStreak().catch(() => {});
 }
@@ -66,47 +68,47 @@ async function excluir(card) {
 
 <template>
   <div>
-    <PageHeader title="Meus Cards" />
+    <PageHeader :title="t('cards.title')" />
 
     <div class="p-8 space-y-6">
       <div class="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-ink">Todos os Meus Cards</h2>
-          <p class="text-sm text-muted mt-1">Gerencie e priorize seu fluxo de trabalho.</p>
+          <h2 class="text-2xl font-bold text-ink">{{ t('cards.heading') }}</h2>
+          <p class="text-sm text-muted mt-1">{{ t('cards.subheading') }}</p>
         </div>
         <div class="card-surface px-4 py-2.5 text-right">
-          <p class="text-xs text-muted tracking-wide">TOTAL ATIVO</p>
+          <p class="text-xs text-muted tracking-wide">{{ t('cards.totalActive') }}</p>
           <p class="text-lg font-bold text-ink flex items-center gap-1 justify-end">
-            <Icon name="clock" :size="16" class="text-accent" /> {{ totalPendentes }} Tasks
+            <Icon name="clock" :size="16" class="text-accent" /> {{ t('cards.tasksCount', { n: totalPendentes }) }}
           </p>
         </div>
       </div>
 
       <div class="card-surface p-4 flex flex-wrap items-end gap-3">
         <div class="min-w-[180px]">
-          <label class="label-field">Filtrar por Area</label>
+          <label class="label-field">{{ t('cards.filterByArea') }}</label>
           <select v-model="filtros.area_id" class="input-field">
-            <option value="">Todas as Areas</option>
+            <option value="">{{ t('cards.allAreas') }}</option>
             <option v-for="a in cardsStore.areas" :key="a.id" :value="a.id">{{ a.nome }}</option>
           </select>
         </div>
         <div class="min-w-[180px]">
-          <label class="label-field">Nivel de Prioridade</label>
+          <label class="label-field">{{ t('cards.priorityLevel') }}</label>
           <select v-model="filtros.prioridade_id" class="input-field">
-            <option value="">Qualquer Prioridade</option>
+            <option value="">{{ t('cards.anyPriority') }}</option>
             <option v-for="p in cardsStore.prioridades" :key="p.id" :value="p.id">{{ p.nome }}</option>
           </select>
         </div>
         <div class="min-w-[160px]">
-          <label class="label-field">Status Atual</label>
+          <label class="label-field">{{ t('cards.currentStatus') }}</label>
           <select v-model="filtros.status" class="input-field">
-            <option value="">Todos os Status</option>
-            <option value="pendente">Pendente</option>
-            <option value="concluido">Concluido</option>
+            <option value="">{{ t('cards.allStatuses') }}</option>
+            <option value="pendente">{{ t('status.pendente') }}</option>
+            <option value="concluido">{{ t('status.concluido') }}</option>
           </select>
         </div>
         <button class="btn-secondary flex items-center gap-1.5" @click="limparFiltros">
-          <Icon name="filter" :size="14" /> Limpar
+          <Icon name="filter" :size="14" /> {{ t('cards.clear') }}
         </button>
       </div>
 
@@ -114,16 +116,16 @@ async function excluir(card) {
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-xs text-muted tracking-wide border-b border-border">
-              <th class="px-5 py-3 font-medium">CARD / TITULO</th>
-              <th class="px-5 py-3 font-medium">AREA</th>
-              <th class="px-5 py-3 font-medium">PRIORIDADE</th>
-              <th class="px-5 py-3 font-medium">STATUS</th>
-              <th class="px-5 py-3 font-medium text-right">ACOES</th>
+              <th class="px-5 py-3 font-medium">{{ t('cards.colTitle') }}</th>
+              <th class="px-5 py-3 font-medium">{{ t('cards.colArea') }}</th>
+              <th class="px-5 py-3 font-medium">{{ t('cards.colPriority') }}</th>
+              <th class="px-5 py-3 font-medium">{{ t('cards.colStatus') }}</th>
+              <th class="px-5 py-3 font-medium text-right">{{ t('cards.colActions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="cardsStore.cards.length === 0">
-              <td colspan="5" class="px-5 py-10 text-center text-muted text-sm">Nenhum card encontrado.</td>
+              <td colspan="5" class="px-5 py-10 text-center text-muted text-sm">{{ t('cards.noCardsFound') }}</td>
             </tr>
             <tr
               v-for="card in cardsStore.cards"
@@ -133,7 +135,7 @@ async function excluir(card) {
               <td class="px-5 py-3.5">
                 <p class="font-medium text-ink" :class="{ 'line-through text-muted': card.status === 'concluido' }">
                   {{ card.descricao }}
-                  <span v-if="card.essencial" class="text-accent" title="Essencial">★</span>
+                  <span v-if="card.essencial" class="text-accent" :title="t('cards.essential')">★</span>
                 </p>
                 <DeadlineLabel :prazo="card.prazo" :status="card.status" />
               </td>
@@ -151,13 +153,13 @@ async function excluir(card) {
                   class="absolute right-5 top-10 z-10 w-40 card-surface shadow-xl py-1 text-left"
                 >
                   <button class="w-full px-3 py-2 text-xs text-ink hover:bg-surface2 flex items-center gap-2" @click="concluir(card)">
-                    <Icon name="check" :size="14" /> {{ card.status === 'concluido' ? 'Reabrir' : 'Concluir' }}
+                    <Icon name="check" :size="14" /> {{ card.status === 'concluido' ? t('cards.reopen') : t('cards.complete') }}
                   </button>
                   <button class="w-full px-3 py-2 text-xs text-ink hover:bg-surface2 flex items-center gap-2" @click="editar(card)">
-                    <Icon name="pencil" :size="14" /> Editar
+                    <Icon name="pencil" :size="14" /> {{ t('common.edit') }}
                   </button>
                   <button class="w-full px-3 py-2 text-xs text-red-400 hover:bg-surface2 flex items-center gap-2" @click="excluir(card)">
-                    <Icon name="trash" :size="14" /> Excluir
+                    <Icon name="trash" :size="14" /> {{ t('common.delete') }}
                   </button>
                 </div>
               </td>
@@ -171,8 +173,10 @@ async function excluir(card) {
           <Icon name="flame" :size="18" />
         </div>
         <div>
-          <p class="text-xs text-muted tracking-wide">STREAK ATUAL</p>
-          <p class="text-sm font-bold text-ink">{{ streakStore.streak?.sequencia_atual ?? 0 }} Dias Focados</p>
+          <p class="text-xs text-muted tracking-wide">{{ t('cards.currentStreak') }}</p>
+          <p class="text-sm font-bold text-ink">
+            {{ t('cards.focusedDays', { n: streakStore.streak?.sequencia_atual ?? 0 }) }}
+          </p>
         </div>
       </div>
     </div>

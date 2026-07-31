@@ -1,20 +1,18 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import PageHeader from '../components/layout/PageHeader.vue';
 import Icon from '../components/Icon.vue';
 import { useStreakStore } from '../stores/streak.js';
+import { hojeBrasiliaISO } from '../lib/date.js';
 
 const streakStore = useStreakStore();
+const { t, tm } = useI18n();
 
-const MESES = [
-  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
-const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
-
-const hoje = new Date();
-const ano = ref(hoje.getFullYear());
-const mes = ref(hoje.getMonth() + 1); // 1-12
+const hojeISO = hojeBrasiliaISO();
+const [anoInicial, mesInicial] = hojeISO.split('-');
+const ano = ref(Number(anoInicial));
+const mes = ref(Number(mesInicial)); // 1-12
 
 async function carregar() {
   await streakStore.carregarHistorico(ano.value, mes.value);
@@ -51,8 +49,6 @@ const historicoPorDia = computed(() => {
   return mapa;
 });
 
-const hojeISO = new Date().toISOString().slice(0, 10);
-
 const celulasCalendario = computed(() => {
   const primeiroDia = new Date(ano.value, mes.value - 1, 1);
   const totalDias = new Date(ano.value, mes.value, 0).getDate();
@@ -77,8 +73,8 @@ const metaPercentual = computed(() => {
 
 <template>
   <div>
-    <PageHeader title="Historico" :show-add-button="false">
-      <span class="text-xs text-muted">Estatisticas de Foco</span>
+    <PageHeader :title="t('history.title')" :show-add-button="false">
+      <span class="text-xs text-muted">{{ t('history.subtitle') }}</span>
     </PageHeader>
 
     <div class="p-8 space-y-6">
@@ -88,11 +84,11 @@ const metaPercentual = computed(() => {
             <Icon name="flame" :size="22" />
           </div>
           <div>
-            <p class="text-xs text-muted">Sequencia Atual</p>
+            <p class="text-xs text-muted">{{ t('history.currentSequence') }}</p>
             <p class="text-2xl font-bold text-ink">
-              {{ streakStore.streak?.sequencia_atual ?? 0 }} <span class="text-sm font-normal text-muted">dias</span>
+              {{ streakStore.streak?.sequencia_atual ?? 0 }} <span class="text-sm font-normal text-muted">{{ t('common.days') }}</span>
             </p>
-            <p class="text-[11px] text-accent">FOCO ATIVO</p>
+            <p class="text-[11px] text-accent">{{ t('history.activeFocus') }}</p>
           </div>
         </div>
 
@@ -101,11 +97,11 @@ const metaPercentual = computed(() => {
             <Icon name="trophy" :size="22" />
           </div>
           <div>
-            <p class="text-xs text-muted">Maior Recorde</p>
+            <p class="text-xs text-muted">{{ t('history.bestRecord') }}</p>
             <p class="text-2xl font-bold text-ink">
-              {{ streakStore.streak?.maior_sequencia ?? 0 }} <span class="text-sm font-normal text-muted">dias</span>
+              {{ streakStore.streak?.maior_sequencia ?? 0 }} <span class="text-sm font-normal text-muted">{{ t('common.days') }}</span>
             </p>
-            <p class="text-[11px] text-muted">Melhor sequencia registrada</p>
+            <p class="text-[11px] text-muted">{{ t('history.bestRecordHint') }}</p>
           </div>
         </div>
       </div>
@@ -113,21 +109,21 @@ const metaPercentual = computed(() => {
       <div class="card-surface p-5">
         <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
           <div class="flex items-center gap-3">
-            <h2 class="text-lg font-semibold text-ink">{{ MESES[mes - 1] }} {{ ano }}</h2>
-            <span class="badge bg-accent/15 text-accent">META {{ metaPercentual }}%</span>
+            <h2 class="text-lg font-semibold text-ink">{{ tm('history.months')[mes - 1] }} {{ ano }}</h2>
+            <span class="badge bg-accent/15 text-accent">{{ t('history.goal', { percent: metaPercentual }) }}</span>
           </div>
           <div class="flex items-center gap-2">
             <button class="btn-secondary text-xs py-1.5 flex items-center gap-1" @click="mesAnterior">
-              <Icon name="chevron-left" :size="14" /> Anterior
+              <Icon name="chevron-left" :size="14" /> {{ t('history.previous') }}
             </button>
             <button class="btn-secondary text-xs py-1.5 flex items-center gap-1" @click="proximoMes">
-              Proximo <Icon name="chevron-right" :size="14" />
+              {{ t('history.next') }} <Icon name="chevron-right" :size="14" />
             </button>
           </div>
         </div>
 
         <div class="grid grid-cols-7 gap-2 text-center text-xs text-muted mb-2">
-          <span v-for="d in DIAS_SEMANA" :key="d">{{ d }}</span>
+          <span v-for="d in tm('history.weekdays')" :key="d">{{ d }}</span>
         </div>
 
         <div class="grid grid-cols-7 gap-2">
@@ -140,16 +136,22 @@ const metaPercentual = computed(() => {
               ]"
             >
               <span class="font-semibold">{{ cel.dia }}</span>
-              <span v-if="cel.hoje" class="text-[9px] text-primary font-semibold">HOJE</span>
-              <span v-else-if="cel.batida" class="text-[9px] text-accent font-semibold">BATIDA</span>
+              <span v-if="cel.hoje" class="text-[9px] text-primary font-semibold">{{ t('history.todayBadge') }}</span>
+              <span v-else-if="cel.batida" class="text-[9px] text-accent font-semibold">{{ t('history.goalMetBadge') }}</span>
             </div>
           </div>
         </div>
 
         <div class="flex items-center gap-5 mt-5 text-xs text-muted">
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-accent/20 border border-accent/40 inline-block" /> Meta Batida</span>
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-surface2 border border-border inline-block" /> Foco Incompleto</span>
-          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-primary/20 border border-primary inline-block" /> Hoje</span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded bg-accent/20 border border-accent/40 inline-block" /> {{ t('history.goalMet') }}
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded bg-surface2 border border-border inline-block" /> {{ t('history.incompleteFocus') }}
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded bg-primary/20 border border-primary inline-block" /> {{ t('history.today') }}
+          </span>
         </div>
       </div>
     </div>

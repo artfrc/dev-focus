@@ -22,7 +22,7 @@ function diaAnterior(dataISO) {
  *    corromper o contador.
  */
 export async function recalcularOfensivaUsuario(userId, dataISO) {
-  if (!serviceClient) throw new Error('SUPABASE_SERVICE_ROLE_KEY nao configurada.');
+  if (!serviceClient) throw new Error('SUPABASE_SERVICE_ROLE_KEY não configurada.');
 
   const { data: essenciais, error: essenciaisError } = await serviceClient
     .from('cards')
@@ -90,7 +90,7 @@ export async function recalcularOfensivaUsuario(userId, dataISO) {
 
 /** Recalcula a ofensiva de todos os usuarios cadastrados para uma data. */
 export async function recalcularOfensivaTodos(dataISO) {
-  if (!serviceClient) throw new Error('SUPABASE_SERVICE_ROLE_KEY nao configurada.');
+  if (!serviceClient) throw new Error('SUPABASE_SERVICE_ROLE_KEY não configurada.');
 
   const { data: usuarios, error } = await serviceClient.from('streak').select('user_id');
   if (error) throw error;

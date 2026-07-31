@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import PageHeader from '../components/layout/PageHeader.vue';
 import DeadlineLabel from '../components/DeadlineLabel.vue';
@@ -14,6 +15,7 @@ const cardsStore = useCardsStore();
 const streakStore = useStreakStore();
 const ui = useUiStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const filtroPrioridade = ref('');
 const filtroStatus = ref('');
@@ -47,7 +49,7 @@ function editar(card) {
 }
 
 async function excluir(card) {
-  if (!confirm(`Excluir o card "${card.descricao}"?`)) return;
+  if (!confirm(t('cards.confirmDelete', { name: card.descricao }))) return;
   await cardsStore.excluirCard(card.id);
   streakStore.carregarStreak().catch(() => {});
 }
@@ -55,8 +57,10 @@ async function excluir(card) {
 
 <template>
   <div>
-    <PageHeader :title="`Area: ${area?.nome ?? '...'}`">
-      <span class="badge bg-surface2 text-ink border border-border">{{ cardsStore.cards.length }} Tarefas</span>
+    <PageHeader :title="t('areaDetail.title', { name: area?.nome ?? '...' })">
+      <span class="badge bg-surface2 text-ink border border-border">
+        {{ t('areaDetail.tasksCount', { n: cardsStore.cards.length }) }}
+      </span>
     </PageHeader>
 
     <div class="p-8 space-y-5">
@@ -66,9 +70,9 @@ async function excluir(card) {
           :class="{ '!bg-primary !text-ink !border-primary': filtroStatus === '' && filtroPrioridade === '' }"
           @click="(filtroPrioridade = ''), (filtroStatus = '')"
         >
-          Tudo
+          {{ t('areaDetail.all') }}
         </button>
-        <span class="text-xs text-muted uppercase tracking-wide ml-2">Prioridade:</span>
+        <span class="text-xs text-muted uppercase tracking-wide ml-2">{{ t('areaDetail.priorityColon') }}</span>
         <button
           v-for="p in cardsStore.prioridades"
           :key="p.id"
@@ -78,26 +82,26 @@ async function excluir(card) {
         >
           {{ p.nome }}
         </button>
-        <span class="text-xs text-muted uppercase tracking-wide ml-2">Status:</span>
+        <span class="text-xs text-muted uppercase tracking-wide ml-2">{{ t('areaDetail.statusColon') }}</span>
         <button
           class="btn-secondary text-xs py-1.5"
           :class="{ '!bg-primary !text-ink !border-primary': filtroStatus === 'pendente' }"
           @click="filtroStatus = filtroStatus === 'pendente' ? '' : 'pendente'"
         >
-          Pendente
+          {{ t('status.pendente') }}
         </button>
         <button
           class="btn-secondary text-xs py-1.5"
           :class="{ '!bg-primary !text-ink !border-primary': filtroStatus === 'concluido' }"
           @click="filtroStatus = filtroStatus === 'concluido' ? '' : 'concluido'"
         >
-          Concluido
+          {{ t('status.concluido') }}
         </button>
       </div>
 
       <div class="space-y-2">
         <p v-if="cardsStore.cards.length === 0" class="text-sm text-muted text-center py-10">
-          Nenhum card nesta area ainda.
+          {{ t('areaDetail.noCards') }}
         </p>
 
         <div
@@ -118,7 +122,9 @@ async function excluir(card) {
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-ink" :class="{ 'line-through text-muted': card.status === 'concluido' }">
               {{ card.descricao }}
-              <span v-if="card.essencial" class="badge bg-accent/20 text-accent ml-2 align-middle">★ ESSENCIAL</span>
+              <span v-if="card.essencial" class="badge bg-accent/20 text-accent ml-2 align-middle">
+                ★ {{ t('areaDetail.essentialBadge') }}
+              </span>
             </p>
             <DeadlineLabel :prazo="card.prazo" :status="card.status" />
           </div>

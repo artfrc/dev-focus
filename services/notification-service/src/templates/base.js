@@ -16,7 +16,7 @@ export function baseTemplate({ titulo, preheader, corpoHtml }) {
                 </td>
               </tr>
             </table>
-            <p style="color:#6B7280;font-size:12px;margin-top:16px;">Voce esta recebendo este e-mail porque possui uma conta ativa no DevFocus.</p>
+            <p style="color:#6B7280;font-size:12px;margin-top:16px;">Você está recebendo este e-mail porque possui uma conta ativa no DevFocus.</p>
           </td>
         </tr>
       </table>

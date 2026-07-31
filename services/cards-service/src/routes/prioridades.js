@@ -15,7 +15,7 @@ prioridadesRouter.get('/', async (req, res) => {
 prioridadesRouter.post('/', async (req, res) => {
   const { nome, cor, ordem } = req.body;
   if (!nome || !cor || ordem === undefined) {
-    return res.status(400).json({ error: 'nome, cor e ordem sao obrigatorios.' });
+    return res.status(400).json({ error: 'nome, cor e ordem são obrigatórios.' });
   }
 
   const { data, error } = await req.supabase
@@ -43,7 +43,7 @@ prioridadesRouter.patch('/:id', async (req, res) => {
     .maybeSingle();
 
   if (error) return res.status(400).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Prioridade nao encontrada.' });
+  if (!data) return res.status(404).json({ error: 'Prioridade não encontrada.' });
   res.json(data);
 });
 

@@ -1,13 +1,16 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useUiStore } from '../stores/ui.js';
 import { useCardsStore } from '../stores/cards.js';
 import { useStreakStore } from '../stores/streak.js';
+import { hojeBrasiliaISO } from '../lib/date.js';
 import Icon from './Icon.vue';
 
 const ui = useUiStore();
 const cardsStore = useCardsStore();
 const streakStore = useStreakStore();
+const { t } = useI18n();
 
 const salvando = ref(false);
 const erro = ref('');
@@ -27,7 +30,7 @@ function resetForm() {
   form.descricao = card?.descricao ?? '';
   form.area_id = card?.area_id ?? ui.areaPadraoId ?? cardsStore.areas[0]?.id ?? '';
   form.prioridade_id = card?.prioridade_id ?? cardsStore.prioridades[0]?.id ?? '';
-  form.prazo = card?.prazo ?? new Date().toISOString().slice(0, 10);
+  form.prazo = card?.prazo ?? hojeBrasiliaISO();
   form.essencial = card?.essencial ?? false;
   erro.value = '';
 }
@@ -44,7 +47,7 @@ watch(
 
 async function salvar() {
   if (!form.descricao.trim() || !form.area_id || !form.prazo) {
-    erro.value = 'Preencha descricao, area e prazo.';
+    erro.value = t('cardForm.fillRequired');
     return;
   }
 
@@ -68,7 +71,7 @@ async function salvar() {
     await Promise.allSettled([cardsStore.carregarResumo(), streakStore.carregarStreak()]);
     ui.fecharCardModal();
   } catch (err) {
-    erro.value = err?.response?.data?.error || 'Nao foi possivel salvar o card.';
+    erro.value = err?.response?.data?.error || t('cardForm.saveError');
   } finally {
     salvando.value = false;
   }
@@ -76,7 +79,7 @@ async function salvar() {
 
 async function excluir() {
   if (!emEdicao.value) return;
-  if (!confirm('Excluir este card? Essa acao nao pode ser desfeita.')) return;
+  if (!confirm(t('cardForm.confirmDelete'))) return;
 
   salvando.value = true;
   try {
@@ -84,7 +87,7 @@ async function excluir() {
     await Promise.allSettled([cardsStore.carregarResumo(), streakStore.carregarStreak()]);
     ui.fecharCardModal();
   } catch (err) {
-    erro.value = err?.response?.data?.error || 'Nao foi possivel excluir o card.';
+    erro.value = err?.response?.data?.error || t('cardForm.deleteError');
   } finally {
     salvando.value = false;
   }
@@ -99,8 +102,8 @@ async function excluir() {
       <div class="relative w-full max-w-md card-surface p-6 shadow-2xl">
         <div class="flex items-start justify-between mb-5">
           <div>
-            <h2 class="text-lg font-semibold text-ink">{{ emEdicao ? 'Editar Tarefa' : 'Nova Tarefa' }}</h2>
-            <p class="text-xs text-muted mt-1">Refine os detalhes para manter o foco maximo.</p>
+            <h2 class="text-lg font-semibold text-ink">{{ emEdicao ? t('cardForm.editTitle') : t('cardForm.newTitle') }}</h2>
+            <p class="text-xs text-muted mt-1">{{ t('cardForm.subtitle') }}</p>
           </div>
           <button class="text-muted hover:text-ink" @click="ui.fecharCardModal()">
             <Icon name="x" :size="18" />
@@ -109,19 +112,19 @@ async function excluir() {
 
         <div class="space-y-4">
           <div>
-            <label class="label-field">Descricao da Tarefa</label>
-            <textarea v-model="form.descricao" rows="3" class="input-field resize-none" placeholder="Descreva a tarefa..." />
+            <label class="label-field">{{ t('cardForm.description') }}</label>
+            <textarea v-model="form.descricao" rows="3" class="input-field resize-none" :placeholder="t('cardForm.descriptionPlaceholder')" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="label-field">Area de Foco</label>
+              <label class="label-field">{{ t('cardForm.focusArea') }}</label>
               <select v-model="form.area_id" class="input-field">
                 <option v-for="area in cardsStore.areas" :key="area.id" :value="area.id">{{ area.nome }}</option>
               </select>
             </div>
             <div>
-              <label class="label-field">Prioridade</label>
+              <label class="label-field">{{ t('cardForm.priority') }}</label>
               <select v-model="form.prioridade_id" class="input-field">
                 <option v-for="p in cardsStore.prioridades" :key="p.id" :value="p.id">{{ p.nome }}</option>
               </select>
@@ -130,12 +133,12 @@ async function excluir() {
 
           <div class="grid grid-cols-2 gap-3 items-end">
             <div>
-              <label class="label-field">Prazo Final</label>
+              <label class="label-field">{{ t('cardForm.deadline') }}</label>
               <input v-model="form.prazo" type="date" class="input-field" />
             </div>
             <div class="flex items-center justify-between bg-bg border border-border rounded-lg px-3 py-2.5">
               <span class="text-sm text-ink flex items-center gap-1.5">
-                <Icon name="star" :size="14" class="text-accent" /> Essencial
+                <Icon name="star" :size="14" class="text-accent" /> {{ t('cardForm.essential') }}
               </span>
               <button
                 type="button"
@@ -153,7 +156,7 @@ async function excluir() {
 
           <div v-if="form.essencial" class="bg-surface2 border border-accent/30 rounded-lg p-3 text-xs text-accent flex gap-2">
             <span>⚡</span>
-            <span>Tarefas essenciais concluidas no prazo mantem sua ofensiva ativa.</span>
+            <span>{{ t('cardForm.essentialHint') }}</span>
           </div>
 
           <p v-if="erro" class="text-xs text-red-400">{{ erro }}</p>
@@ -166,14 +169,14 @@ async function excluir() {
             :disabled="salvando"
             @click="excluir"
           >
-            <Icon name="trash" :size="15" /> Excluir Card
+            <Icon name="trash" :size="15" /> {{ t('cardForm.deleteCard') }}
           </button>
           <span v-else />
 
           <div class="flex items-center gap-2">
-            <button class="btn-secondary" :disabled="salvando" @click="ui.fecharCardModal()">Cancelar</button>
+            <button class="btn-secondary" :disabled="salvando" @click="ui.fecharCardModal()">{{ t('common.cancel') }}</button>
             <button class="btn-primary" :disabled="salvando" @click="salvar">
-              {{ salvando ? 'Salvando...' : 'Salvar Alteracoes' }}
+              {{ salvando ? t('cardForm.saving') : t('cardForm.saveChanges') }}
             </button>
           </div>
         </div>

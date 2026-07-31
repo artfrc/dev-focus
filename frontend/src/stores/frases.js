@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import { supabase } from '../lib/supabase.js';
+import i18n from '../i18n/index.js';
+import mensagensEn from '../i18n/locales/en.js';
 
 function diaDoAno() {
   const agora = new Date();
@@ -14,6 +16,14 @@ export const useFrasesStore = defineStore('frases', {
 
   actions: {
     async carregarFraseDoDia() {
+      // As frases motivacionais no banco (frases_motivacionais) sao em pt-BR;
+      // em ingles usamos uma lista local equivalente para manter a interface no idioma certo.
+      if (i18n.global.locale.value === 'en') {
+        const frases = mensagensEn.motivationalQuotes;
+        this.fraseDoDia = frases[diaDoAno() % frases.length];
+        return this.fraseDoDia;
+      }
+
       const { data, error } = await supabase
         .from('frases_motivacionais')
         .select('texto')
@@ -21,7 +31,7 @@ export const useFrasesStore = defineStore('frases', {
         .order('id', { ascending: true });
 
       if (error || !data?.length) {
-        this.fraseDoDia = 'Progresso, nao perfeicao.';
+        this.fraseDoDia = 'Progresso, não perfeição.';
         return this.fraseDoDia;
       }
 

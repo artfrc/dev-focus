@@ -1,10 +1,12 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import PageHeader from '../components/layout/PageHeader.vue';
 import Icon from '../components/Icon.vue';
 import { useCardsStore } from '../stores/cards.js';
 
 const cardsStore = useCardsStore();
+const { t } = useI18n();
 
 onMounted(async () => {
   await Promise.all([cardsStore.carregarAreas(), cardsStore.carregarPrioridades(), cardsStore.carregarResumo()]);
@@ -33,7 +35,7 @@ async function criarArea() {
 }
 
 async function excluirArea(area) {
-  if (!confirm(`Excluir a area "${area.nome}"? Os cards vinculados tambem serao removidos.`)) return;
+  if (!confirm(t('settings.confirmDeleteArea', { name: area.nome }))) return;
   await cardsStore.excluirArea(area.id);
 }
 
@@ -60,7 +62,7 @@ async function salvarPrioridade(p) {
 }
 
 async function excluirPrioridade(p) {
-  if (!confirm(`Excluir a prioridade "${p.nome}"?`)) return;
+  if (!confirm(t('settings.confirmDeletePriority', { name: p.nome }))) return;
   await cardsStore.excluirPrioridade(p.id);
 }
 
@@ -76,21 +78,21 @@ async function criarPrioridade() {
 
 <template>
   <div>
-    <PageHeader title="Configuracoes" :show-add-button="false" />
+    <PageHeader :title="t('settings.title')" :show-add-button="false" />
 
     <div class="p-8 space-y-10">
       <section>
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="text-lg font-semibold text-ink">Areas de Atuacao</h2>
-            <p class="text-sm text-muted">Gerencie os dominios do seu ecossistema.</p>
+            <h2 class="text-lg font-semibold text-ink">{{ t('settings.areasSection') }}</h2>
+            <p class="text-sm text-muted">{{ t('settings.areasDesc') }}</p>
           </div>
         </div>
 
         <form class="flex items-center gap-2 max-w-sm mb-4" @submit.prevent="criarArea">
-          <input v-model="novaAreaNome" type="text" placeholder="Nome da nova area..." class="input-field" />
+          <input v-model="novaAreaNome" type="text" :placeholder="t('areas.newAreaPlaceholder')" class="input-field" />
           <button type="submit" class="btn-primary shrink-0 flex items-center gap-1.5">
-            <Icon name="plus" :size="14" /> Adicionar
+            <Icon name="plus" :size="14" /> {{ t('settings.add') }}
           </button>
         </form>
 
@@ -111,7 +113,7 @@ async function criarPrioridade() {
               </span>
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-semibold text-ink truncate">{{ area.nome }}</p>
-                <p class="text-xs text-muted">{{ pendentesDe(area.id) }} Tarefas Ativas</p>
+                <p class="text-xs text-muted">{{ t('settings.activeTasks', { n: pendentesDe(area.id) }) }}</p>
               </div>
               <button class="text-muted hover:text-ink p-1" @click="iniciarEdicaoArea(area)"><Icon name="pencil" :size="15" /></button>
               <button class="text-muted hover:text-red-400 p-1" @click="excluirArea(area)"><Icon name="trash" :size="15" /></button>
@@ -123,38 +125,38 @@ async function criarPrioridade() {
       <section>
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="text-lg font-semibold text-ink">Prioridades &amp; Identidade</h2>
-            <p class="text-sm text-muted">Defina as cores que classificam a urgencia das suas tarefas.</p>
+            <h2 class="text-lg font-semibold text-ink">{{ t('settings.prioritiesSection') }}</h2>
+            <p class="text-sm text-muted">{{ t('settings.prioritiesDesc') }}</p>
           </div>
           <button class="btn-secondary flex items-center gap-1.5 text-xs" @click="mostrandoFormNovaPrioridade = !mostrandoFormNovaPrioridade">
-            <Icon name="plus" :size="14" /> Nova Prioridade
+            <Icon name="plus" :size="14" /> {{ t('settings.newPriority') }}
           </button>
         </div>
 
         <div v-if="mostrandoFormNovaPrioridade" class="card-surface p-4 mb-3 flex flex-wrap items-end gap-3">
           <div>
-            <label class="label-field">Nome</label>
-            <input v-model="novaPrioridade.nome" type="text" class="input-field" placeholder="Ex: Urgente" />
+            <label class="label-field">{{ t('common.name') }}</label>
+            <input v-model="novaPrioridade.nome" type="text" class="input-field" :placeholder="t('settings.priorityNamePlaceholder')" />
           </div>
           <div>
-            <label class="label-field">Cor</label>
+            <label class="label-field">{{ t('common.color') }}</label>
             <input v-model="novaPrioridade.cor" type="color" class="w-16 h-10 rounded border border-border bg-transparent" />
           </div>
           <div>
-            <label class="label-field">Ordem</label>
+            <label class="label-field">{{ t('common.order') }}</label>
             <input v-model.number="novaPrioridade.ordem" type="number" min="1" class="input-field w-20" />
           </div>
-          <button class="btn-primary" @click="criarPrioridade">Salvar</button>
+          <button class="btn-primary" @click="criarPrioridade">{{ t('common.save') }}</button>
         </div>
 
         <div class="card-surface overflow-hidden">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-muted tracking-wide border-b border-border">
-                <th class="px-5 py-3 font-medium">NOME DA PRIORIDADE</th>
-                <th class="px-5 py-3 font-medium">COR IDENTIFICADORA</th>
-                <th class="px-5 py-3 font-medium">ORDEM</th>
-                <th class="px-5 py-3 font-medium text-right">ACOES</th>
+                <th class="px-5 py-3 font-medium">{{ t('settings.colName') }}</th>
+                <th class="px-5 py-3 font-medium">{{ t('settings.colColor') }}</th>
+                <th class="px-5 py-3 font-medium">{{ t('settings.colOrder') }}</th>
+                <th class="px-5 py-3 font-medium text-right">{{ t('settings.colActions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -177,7 +179,7 @@ async function criarPrioridade() {
                     <button class="text-muted p-1" @click="prioridadeEditandoId = null"><Icon name="x" :size="15" /></button>
                   </template>
                   <template v-else>
-                    <button class="text-primary text-xs font-medium hover:underline" @click="iniciarEdicaoPrioridade(p)">Configurar</button>
+                    <button class="text-primary text-xs font-medium hover:underline" @click="iniciarEdicaoPrioridade(p)">{{ t('common.configure') }}</button>
                     <button class="text-red-400 p-1 align-middle" @click="excluirPrioridade(p)"><Icon name="trash" :size="14" /></button>
                   </template>
                 </td>

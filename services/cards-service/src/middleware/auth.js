@@ -9,12 +9,12 @@ export async function requireAuth(req, res, next) {
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ error: 'Token de autenticacao ausente.' });
+    return res.status(401).json({ error: 'Token de autenticação ausente.' });
   }
 
   const { data, error } = await anonClient.auth.getUser(token);
   if (error || !data?.user) {
-    return res.status(401).json({ error: 'Token invalido ou expirado.' });
+    return res.status(401).json({ error: 'Token inválido ou expirado.' });
   }
 
   req.userId = data.user.id;

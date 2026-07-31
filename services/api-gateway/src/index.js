@@ -28,7 +28,7 @@ app.use('/api/resumo', proxyPara(CARDS_SERVICE_URL));
 app.use('/api/streak', proxyPara(STREAK_SERVICE_URL));
 
 app.use((req, res) => {
-  res.status(404).json({ error: 'Rota nao encontrada no api-gateway.' });
+  res.status(404).json({ error: 'Rota não encontrada no api-gateway.' });
 });
 
 app.listen(PORT, () => {

@@ -29,14 +29,14 @@ cardsRouter.get('/:id', async (req, res) => {
     .maybeSingle();
 
   if (error) return res.status(400).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Card nao encontrado.' });
+  if (!data) return res.status(404).json({ error: 'Card não encontrado.' });
   res.json(data);
 });
 
 cardsRouter.post('/', async (req, res) => {
   const { descricao, area_id, prioridade_id, prazo, essencial } = req.body;
   if (!descricao || !area_id || !prazo) {
-    return res.status(400).json({ error: 'descricao, area_id e prazo sao obrigatorios.' });
+    return res.status(400).json({ error: 'descrição, area_id e prazo são obrigatórios.' });
   }
 
   const { data, error } = await req.supabase
@@ -77,7 +77,7 @@ cardsRouter.patch('/:id', async (req, res) => {
     .maybeSingle();
 
   if (error) return res.status(400).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Card nao encontrado.' });
+  if (!data) return res.status(404).json({ error: 'Card não encontrado.' });
   res.json(data);
 });
 
@@ -90,7 +90,7 @@ cardsRouter.post('/:id/concluir', async (req, res) => {
     .maybeSingle();
 
   if (error) return res.status(400).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Card nao encontrado.' });
+  if (!data) return res.status(404).json({ error: 'Card não encontrado.' });
   res.json(data);
 });
 
@@ -103,7 +103,7 @@ cardsRouter.post('/:id/reabrir', async (req, res) => {
     .maybeSingle();
 
   if (error) return res.status(400).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: 'Card nao encontrado.' });
+  if (!data) return res.status(404).json({ error: 'Card não encontrado.' });
   res.json(data);
 });
 
