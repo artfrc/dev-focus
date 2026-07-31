@@ -4,6 +4,15 @@ Sistema pessoal de organizacao de atividades ("Jira pessoal com gamificacao"): a
 cards com prazo e marcacao de "essencial", ofensiva (streak) diaria estilo Duolingo, historico em
 calendario e notificacoes por e-mail (lembrete diario + alerta de prazo).
 
+## Telas
+
+| | |
+|---|---|
+| **Login** ![Login](telas/login.png) | **Painel Principal** ![Painel Principal](telas/painel-inicial.png) |
+| **Meus Cards** ![Meus Cards](telas/cards.png) | **Áreas** ![Áreas](telas/areas.png) |
+| **Histórico** ![Histórico](telas/historico.png) | **Configurações** ![Configurações](telas/configuracoes.png) |
+| **E-mail de lembrete diário** ![E-mail de lembrete diário](telas/email.png) | |
+
 ## Arquitetura
 
 ```
@@ -61,8 +70,21 @@ Este repo usa npm workspaces — um `npm install` na raiz instala todos os servi
 
 ```bash
 npm install
+npm run dev
+```
 
-# cada comando roda em um terminal separado
+O `npm run dev` sobe os 5 processos de uma vez (gateway, cards, streak, notify, frontend) num
+terminal so, com logs coloridos e prefixados por servico (`[gateway]`, `[cards]`, etc.). `Ctrl+C`
+derruba tudo junto.
+
+> Se voce rodar `npm install` de novo enquanto o `npm run dev` ja estiver de pe, o `--watch` dos
+> servicos pode detectar a mudanca no `node_modules` e tentar reiniciar em cima da porta ainda
+> ocupada (`EADDRINUSE` passageiro nos logs). Pare o `npm run dev` antes de instalar algo novo.
+
+Se preferir cada servico no seu proprio terminal (logs isolados, restart individual sem derrubar
+os outros):
+
+```bash
 npm run dev:gateway        # http://localhost:3000
 npm run dev:cards          # http://localhost:3001
 npm run dev:streak         # http://localhost:3002
